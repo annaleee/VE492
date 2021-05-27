@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -18,6 +18,7 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+
 
 class SearchProblem:
     """
@@ -71,7 +72,8 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem):
     """
@@ -88,17 +90,65 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
+    # initialize a set to detect whether a node has been visited or not
+    visited = set()
+    # implement DFS using the stack structure
+    fringe = util.Stack()
+    # push the list of the information of the root node into the stack,
+    # the first element is the state of node,
+    # the second one is the path from the root to the current node
+    fringe.push((problem.getStartState(), []))
+    # DFS
+    while not fringe.isEmpty():
+        state, path = fringe.pop()
+        # determine when to stop the loop,
+        # isGoalState() returns the boolean value whether the current state is the goal
+        if problem.isGoalState(state):
+            return path
+        # update the set visited
+        if state not in visited:
+            visited.add(state)
+            # update the stack fringe
+            for successor in problem.getSuccessors(state):
+                fringe.push((successor[2], path + [successor[0]]))
     util.raiseNotDefined()
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    # almost same implementation as DFS, just change the structure stack to queue
+    visited = set()
+    fringe = util.Queue()
+    fringe.push((problem.getStartState(), []))
+    while not fringe.isEmpty():
+        state, path = fringe.pop()
+        if problem.isGoalState(state):
+            return path
+        if state not in visited:
+            visited.add(state)
+            for successor in problem.getSuccessors(state):
+                fringe.push((successor[2], path + [successor[0]]))
     util.raiseNotDefined()
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+    visited = set()
+    fringe = util.PriorityQueue()
+    # the criterion for the priority is the accumulated cost from root to the current node
+    fringe.push((problem.getStartState(), [], 0), 0)
+    while not fringe.isEmpty():
+        state, path, cost = fringe.pop()
+        if problem.isGoalState(state):
+            return path
+        if state not in visited:
+            visited.add(state)
+            for successor in problem.getSuccessors(state):
+                fringe.push((successor[2], path + [successor[0]], cost + successor[1]), cost + successor[1])
     util.raiseNotDefined()
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -107,9 +157,23 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    visited = set()
+    fringe = util.PriorityQueue()
+    # the criterion for the priority is the heuristic function
+    fringe.push((problem.getStartState(), [], 0), heuristic(problem.getStartState(), problem))
+    while not fringe.isEmpty():
+        state, path, cost = fringe.pop()
+        if problem.isGoalState(state):
+            return path
+        if state not in visited:
+            visited.add(state)
+            for successor in problem.getSuccessors(state):
+                fringe.push((successor[2], path + [successor[0]], cost + successor[1]),
+                            cost + successor[1] + heuristic(successor[2], problem))
     util.raiseNotDefined()
 
 
