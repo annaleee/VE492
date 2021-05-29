@@ -390,7 +390,17 @@ def cornersHeuristic(state, problem):
     corners = problem.corners  # These are the corner coordinates
     walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
     "*** YOUR CODE HERE ***"
-    return 0  # Default to trivial solution
+    if problem.isGoalState(state):
+        return 0  # Default to trivial solution
+    unvisited_corners = []
+    manhattan_distance = []
+    for i in range(0, 4):
+        if not state[1][i]:
+            unvisited_corners.append(corners[i])
+    for i in range(0, len(unvisited_corners)):
+        corner = unvisited_corners[i]
+        manhattan_distance.append(abs(state[0][0] - corner[0]) + abs(state[0][1] - corner[1]))
+    return max(manhattan_distance)
 
 
 class AStarCornersAgent(SearchAgent):
@@ -491,7 +501,18 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    if problem.isGoalState(state):
+        return 0  # Default to trivial solution
+    manhattan_distance = []
+    for food_position in foodGrid.asList():
+        manhattan_distance.append(mazeDistance(state[0], food_position, problem.startingGameState))
+        ## search nodes expanded: 4137   time cost: 37.1s  Why so much time????
+        # manhattan_distance.append(abs(state[0][0] - food_position[0]) + abs(state[0][1] - food_position[1]))
+        ## search nodes exanded: 9551   time cost: 2.5s
+        # manhattan_distance.append(
+        #     ((state[0][0] - food_position[0]) ** 2 + (state[0][1] - food_position[1]) ** 2) ** 0.5)
+        ## search nodes expanded: 10352   time cost: 3s
+    return max(manhattan_distance)
 
 
 class ClosestDotSearchAgent(SearchAgent):
