@@ -34,7 +34,6 @@ class ReflexAgent(Agent):
         chosenIndex = random.choice(bestIndices)  # Pick randomly among the best
 
         "Add more of your code here if you want to"
-
         return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState, action):
@@ -60,8 +59,26 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
+        foods=newFood.asList()
+        ghosts = [(G.getPosition()[0], G.getPosition()[1]) for G in newGhostStates]
+        scared = min(newScaredTimes) > 0
+        score = 2*successorGameState.getScore()
+        if not scared and (newPos in ghosts):
+            return -float('inf')
+        if newPos in foods:
+            return 2+score
+        if currentGameState.hasWall(newPos[0],newPos[1]):
+            score-=0.1
+        foodDist=[(util.manhattanDistance(newPos,food)) for food in foods]
+        ghostDist=[(util.manhattanDistance(newPos,ghost)) for ghost in ghosts]
+        minDistGhost=min(ghostDist)
+        if len(foodDist)==0 :
+            return score- 2.0/minDistGhost
+        minDistFood=min(foodDist)
+        if minDistFood==0:
+            return score- 2.0/minDistGhost
+        return score+1/minDistFood-2.0/minDistGhost
 
-        return successorGameState.getScore()
 
 
 def scoreEvaluationFunction(currentGameState):
@@ -237,7 +254,31 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    newGhostStates = currentGameState.getGhostStates()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+
+    "*** YOUR CODE HERE ***"
+    foods = newFood.asList()
+    ghosts = [(G.getPosition()[0], G.getPosition()[1]) for G in newGhostStates]
+    scared = min(newScaredTimes) > 0
+    score = 2 * currentGameState.getScore()
+    if not scared and (newPos in ghosts):
+        return -float('inf')
+    if newPos in foods:
+        return 2 + score
+    if currentGameState.hasWall(newPos[0], newPos[1]):
+        score -= 0.1
+    foodDist = [(util.manhattanDistance(newPos, food)) for food in foods]
+    ghostDist = [(util.manhattanDistance(newPos, ghost)) for ghost in ghosts]
+    minDistGhost = min(ghostDist)
+    if len(foodDist) == 0 or newPos in foods:
+        return score - 2.0 / minDistGhost
+    minDistFood = min(foodDist)
+    if scared:
+        return score+1/minDistFood
+    return score + 1 / minDistFood - 2.0 / minDistGhost
 
 
 # Abbreviation
