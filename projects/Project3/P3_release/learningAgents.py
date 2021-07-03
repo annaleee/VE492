@@ -29,7 +29,7 @@ class ValueEstimationAgent(Agent):
       from this agent. While a ValueIterationAgent has
       a model of the environment via a MarkovDecisionProcess
       (see mdp.py) that is used to estimate Q-Values before
-      ever actually acting, the QLearningAgent estimates
+      every actually acting, the QLearningAgent estimates
       Q-Values while acting in the environment.
     """
 
