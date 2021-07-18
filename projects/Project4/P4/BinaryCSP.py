@@ -128,7 +128,19 @@ def minimumRemainingValuesHeuristic(assignment, csp):
     domains = assignment.varDomains
 
     # TODO: Question 2
-    raise_undefined_error()
+    least_number = -1
+    for var in domains:
+        if assignment.isAssigned(var):
+            continue
+        if least_number < 0:
+            least_number = len(domains[var])
+            nextVar = var
+            continue
+        length_of_domain = len(domains[var])
+        if least_number > length_of_domain:
+            least_number = length_of_domain
+            nextVar = var
+    return nextVar
 
 
 def orderValues(assignment, csp, var):
@@ -157,17 +169,18 @@ def leastConstrainingValuesHeuristic(assignment, csp, var):
         a list of the possible values ordered by the least constraining value heuristic
     """
     # TODO: Question 3
-        list = []
+    list = []
+    constraints = []
+    for constraint in csp.binaryConstraints:
+        if constraint.affects(var):
+            constraints.append(constraint)
     for value in assignment.varDomains[var]:
         count = 0
-        constraints = []
-        for constraint in csp.binaryConstraints:
-            if constraint.affect(var):
-                constraints.append(constraint)
         for constraint in constraints:
             other_var = constraint.otherVariable(var)
-            if not constraint.isSatisfied(value, other_var):
-                count = count + 1
+            for val2 in assignment.varDomains[other_var]:
+                if not constraint.isSatisfied(value, val2):
+                    count = count + 1
         list.append((count, value))
     list.sort(key=lambda x: x[0], reverse=True)
     return [each[1] for each in list]
