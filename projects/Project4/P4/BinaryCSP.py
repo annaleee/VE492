@@ -157,7 +157,20 @@ def leastConstrainingValuesHeuristic(assignment, csp, var):
         a list of the possible values ordered by the least constraining value heuristic
     """
     # TODO: Question 3
-    raise_undefined_error()
+        list = []
+    for value in assignment.varDomains[var]:
+        count = 0
+        constraints = []
+        for constraint in csp.binaryConstraints:
+            if constraint.affect(var):
+                constraints.append(constraint)
+        for constraint in constraints:
+            other_var = constraint.otherVariable(var)
+            if not constraint.isSatisfied(value, other_var):
+                count = count + 1
+        list.append((count, value))
+    list.sort(key=lambda x: x[0], reverse=True)
+    return [each[1] for each in list]
 
 
 def noInferences(assignment, csp, var, value):
