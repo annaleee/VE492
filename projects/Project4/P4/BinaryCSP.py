@@ -1,4 +1,6 @@
 # Hint: from collections import deque
+from collections import deque
+
 from Interface import *
 
 
@@ -73,7 +75,7 @@ def recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMeth
                     return result
                 for element in inference:
                     assignment.varDomains[element[0]].add(element[1])
-            assignment.assignedValues[var]=None
+                assignment.assignedValues[var]=None
     return None
 
 
@@ -218,7 +220,18 @@ def forwardChecking(assignment, csp, var, value):
     inferences = set([])
 
     # TODO: Question 4
-    raise_undefined_error()
+    constraints=[]
+    for constraint in csp.binaryConstraints:
+        if constraint.affects(var):
+            constraints.append(constraint)
+    for constraint in constraints:
+        values = assignment.varDomains[constraint.otherVariable(var)]
+        for val in values:
+            if not constraint.isSatisfied(val,value):
+                inferences.add((constraint.otherVariable(var),val))
+    for inference in inferences:
+        assignment.varDomains[inference[0]].remove(inference[1])
+    return inferences
 
 
 # = = = = = = = QUESTION 5  = = = = = = = #
@@ -248,7 +261,19 @@ def revise(assignment, csp, var1, var2, constraint):
     inferences = set([])
 
     # TODO: Question 5
-    raise_undefined_error()
+    for val2 in assignment.varDomains[var2]:
+        removed=True
+        for val1 in assignment.varDomains[var1]:
+            if constraint.isSatisfied(val1,val2):
+                removed=False
+                break
+        if removed:
+            inferences.union((var2,val2))
+    if len(assignment.varDomains[var2])==len(inferences):
+        return None
+    for inference in inferences:
+        assignment.varDomains[inference[0]].remove(inference[1])
+    return inferences
 
 
 def maintainArcConsistency(assignment, csp, var, value):
@@ -275,7 +300,26 @@ def maintainArcConsistency(assignment, csp, var, value):
 
     # TODO: Question 5
     #  Hint: implement revise first and use it as a helper function"""
-    raise_undefined_error()
+    arcs=deque()
+    for constraint in csp.binaryConstraints:
+        if constraint.affects(var):
+            if not assignment.isAssigned(constraint.otherVariable(var)):
+                arcs.append((constraint,constraint.otherVariable(var),var))
+    while len(arcs)!=0:
+        arc=arcs.pop()
+        inference=revise(assignment,csp,arc[1],arc[2],arc[0])
+        if inference==None:
+            if len(inferences)!=0:
+                for infer in inferences:
+                    assignment.varDomains[infer[0]].insert([infer[1]])
+            return None
+        if len(inference)!=0:
+            inferences.union(inference)
+            for const in csp.binaryConstraints:
+                if const.affects(arc[1]):
+                    if not assignment.isAssigned(const.otherVariable(arc[1])):
+                        arcs.append((const,const.otherVariable(arc[1]),arc[1]))
+    return inferences
 
 
 # = = = = = = = QUESTION 6  = = = = = = = #
@@ -298,7 +342,23 @@ def AC3(assignment, csp):
 
     # TODO: Question 6
     #  Hint: implement revise first and use it as a helper function"""
-    raise_undefined_error()
+    arcs=deque()
+    for constraint in csp.binaryConstraints:
+        arcs.append((constraint,constraint.var1,constraint.var2))
+    while len(arcs)!=0:
+        arc=arcs.pop()
+        inference=revise(assignment,csp,arc[1],arc[2],arc[0])
+        if inference is None:
+            for infer in inferences:
+                assignment.varDomains[infer[0]].add(infer[1])
+            return None
+        if len(inference)!=0:
+            inferences.union(inference)
+            for const in csp.binaryConstraints:
+                if const.affects(arc[1]):
+                    arcs.append((const,const.otherVariable(arc[1]),arc[1]))
+    return assignment
+
 
 
 def solve(csp, orderValuesMethod=leastConstrainingValuesHeuristic,
