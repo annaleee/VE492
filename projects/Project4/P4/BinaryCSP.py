@@ -268,7 +268,7 @@ def revise(assignment, csp, var1, var2, constraint):
                 removed=False
                 break
         if removed:
-            inferences.union((var2,val2))
+            inferences.add((var2,val2))
     if len(assignment.varDomains[var2])==len(inferences):
         return None
     for inference in inferences:
@@ -304,7 +304,10 @@ def maintainArcConsistency(assignment, csp, var, value):
     for constraint in csp.binaryConstraints:
         if constraint.affects(var):
             if not assignment.isAssigned(constraint.otherVariable(var)):
-                arcs.append((constraint,constraint.otherVariable(var),var))
+                arcs.appendleft((constraint,var,constraint.otherVariable(var)))
+            else:
+                if not constraint.isSatisfied(assignment.assignedValues[var],assignment.assignedValues[constraint.otherVariable(var)]):
+                    return None
     while len(arcs)!=0:
         arc=arcs.pop()
         inference=revise(assignment,csp,arc[1],arc[2],arc[0])
@@ -314,11 +317,12 @@ def maintainArcConsistency(assignment, csp, var, value):
                     assignment.varDomains[infer[0]].insert([infer[1]])
             return None
         if len(inference)!=0:
-            inferences.union(inference)
+            for infer in inference:
+                inferences.add(infer)
             for const in csp.binaryConstraints:
                 if const.affects(arc[1]):
                     if not assignment.isAssigned(const.otherVariable(arc[1])):
-                        arcs.append((const,const.otherVariable(arc[1]),arc[1]))
+                        arcs.appendleft((const,arc[1],const.otherVariable(arc[1])))
     return inferences
 
 
@@ -353,10 +357,11 @@ def AC3(assignment, csp):
                 assignment.varDomains[infer[0]].add(infer[1])
             return None
         if len(inference)!=0:
-            inferences.union(inference)
+            for infer in inference:
+                inferences.add(infer)
             for const in csp.binaryConstraints:
                 if const.affects(arc[1]):
-                    arcs.append((const,const.otherVariable(arc[1]),arc[1]))
+                    arcs.append((const,arc[1],const.otherVariable(arc[1])))
     return assignment
 
 
