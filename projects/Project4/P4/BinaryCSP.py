@@ -14,7 +14,6 @@ def consistent(assignment, csp, var, value):
     Only check if this value would be consistent or not.
     If the other variable for a constraint is not assigned,
     then the new value is consistent with the constraint.
-
     Args:
         assignment (Assignment): the partial assignment
         csp (ConstraintSatisfactionProblem): the problem definition
@@ -28,10 +27,9 @@ def consistent(assignment, csp, var, value):
     for constraints in csp.binaryConstraints:
         if constraints.affects(var):
             if assignment.isAssigned(constraints.otherVariable(var)):
-                if not constraints.isSatisfied(value,assignment.assignedValues[constraints.otherVariable(var)]):
+                if not constraints.isSatisfied(value, assignment.assignedValues[constraints.otherVariable(var)]):
                     return False
     return True
-
 
 
 def recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMethod, inferenceMethod):
@@ -42,12 +40,10 @@ def recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMeth
     In the case that a recursive call returns failure or a variable assignment is incorrect,
     the inferences made along the way should be reversed.
     See maintainArcConsistency and forwardChecking for the format of inferences.
-
     Examples of the functions to be passed in:
     orderValuesMethod: orderValues, leastConstrainingValuesHeuristic
     selectVariableMethod: chooseFirstVariable, minimumRemainingValuesHeuristic
     inferenceMethod: noInferences, maintainArcConsistency, forwardChecking
-
     Args:
         assignment (Assignment): a partial assignment to expand upon
         csp (ConstraintSatisfactionProblem): the problem definition
@@ -64,26 +60,25 @@ def recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMeth
     # TODO: Question 1
     if assignment.isComplete():
         return assignment
-    var=selectVariableMethod(assignment,csp)
-    for value in orderValuesMethod(assignment,csp,var):
-        if consistent(assignment,csp,var,value):
-            assignment.assignedValues[var]=value
-            inference=inferenceMethod(assignment,csp,var,value)
+    var = selectVariableMethod(assignment, csp)
+    for value in orderValuesMethod(assignment, csp, var):
+        if consistent(assignment, csp, var, value):
+            assignment.assignedValues[var] = value
+            inference = inferenceMethod(assignment, csp, var, value)
             if inference is not None:
-                result=recursiveBacktracking(assignment,csp,orderValuesMethod, selectVariableMethod, inferenceMethod)
-                if result!=None:
+                result = recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMethod,
+                                               inferenceMethod)
+                if result != None:
                     return result
                 for element in inference:
                     assignment.varDomains[element[0]].add(element[1])
-                assignment.assignedValues[var]=None
+                assignment.assignedValues[var] = None
     return None
-
 
 
 def eliminateUnaryConstraints(assignment, csp):
     """
     Uses unary constraints to eleminate values from an assignment.
-
     Args:
         assignment (Assignment): a partial assignment to expand upon
         csp (ConstraintSatisfactionProblem): the problem definition
@@ -119,7 +114,6 @@ def minimumRemainingValuesHeuristic(assignment, csp):
     """
     Selects the next variable to try to give a value to in an assignment.
     Uses minimum remaining values heuristic to pick a variable. Use degree heuristic for breaking ties.
-
     Args:
         assignment (Assignment): the partial assignment to expand
         csp (ConstraintSatisfactionProblem): the problem description
@@ -161,7 +155,6 @@ def leastConstrainingValuesHeuristic(assignment, csp, var):
     Creates an ordered list of the remaining values left for a given variable.
     Values should be attempted in the order returned.
     The least constraining value should be at the front of the list.
-
     Args:
         assignment (Assignment): the partial assignment to expand
         csp (ConstraintSatisfactionProblem): the problem description
@@ -207,7 +200,6 @@ def forwardChecking(assignment, csp, var, value):
     if they result in a conflicting partial assignment.
     If the algorithm reveals an inconsistency,
     any inferences made should be reversed before ending the function.
-
     Args:
         assignment (Assignment): the partial assignment to expand
         csp (ConstraintSatisfactionProblem): the problem description
@@ -220,15 +212,15 @@ def forwardChecking(assignment, csp, var, value):
     inferences = set([])
 
     # TODO: Question 4
-    constraints=[]
+    constraints = []
     for constraint in csp.binaryConstraints:
         if constraint.affects(var):
             constraints.append(constraint)
     for constraint in constraints:
         values = assignment.varDomains[constraint.otherVariable(var)]
         for val in values:
-            if not constraint.isSatisfied(val,value):
-                inferences.add((constraint.otherVariable(var),val))
+            if not constraint.isSatisfied(val, value):
+                inferences.add((constraint.otherVariable(var), val))
     for inference in inferences:
         assignment.varDomains[inference[0]].remove(inference[1])
     return inferences
@@ -247,7 +239,6 @@ def revise(assignment, csp, var1, var2, constraint):
     if they result in a conflicting partial assignment.
     If the algorithm reveals an inconsistency,
     any inferences made should be reversed before ending the function.
-
     Args:
         assignment (Assignment): the partial assignment to expand
         csp (ConstraintSatisfactionProblem): the problem description
@@ -262,14 +253,14 @@ def revise(assignment, csp, var1, var2, constraint):
 
     # TODO: Question 5
     for val2 in assignment.varDomains[var2]:
-        removed=True
+        removed = True
         for val1 in assignment.varDomains[var1]:
-            if constraint.isSatisfied(val1,val2):
-                removed=False
+            if constraint.isSatisfied(val1, val2):
+                removed = False
                 break
         if removed:
-            inferences.add((var2,val2))
-    if len(assignment.varDomains[var2])==len(inferences):
+            inferences.add((var2, val2))
+    if len(assignment.varDomains[var2]) == len(inferences):
         return None
     for inference in inferences:
         assignment.varDomains[inference[0]].remove(inference[1])
@@ -285,7 +276,6 @@ def maintainArcConsistency(assignment, csp, var, value):
     if they result in a conflicting partial assignment.
     If the algorithm reveals an inconsistency,
     and inferences made should be reversed before ending the function.
-
     Args:
         assignment (Assignment): the partial assignment to expand
         csp (ConstraintSatisfactionProblem): the problem description
@@ -300,29 +290,30 @@ def maintainArcConsistency(assignment, csp, var, value):
 
     # TODO: Question 5
     #  Hint: implement revise first and use it as a helper function"""
-    arcs=deque()
+    arcs = deque()
     for constraint in csp.binaryConstraints:
         if constraint.affects(var):
             if not assignment.isAssigned(constraint.otherVariable(var)):
-                arcs.appendleft((constraint,var,constraint.otherVariable(var)))
+                arcs.appendleft((constraint, var, constraint.otherVariable(var)))
             else:
-                if not constraint.isSatisfied(assignment.assignedValues[var],assignment.assignedValues[constraint.otherVariable(var)]):
+                if not constraint.isSatisfied(assignment.assignedValues[var],
+                                              assignment.assignedValues[constraint.otherVariable(var)]):
                     return None
-    while len(arcs)!=0:
-        arc=arcs.pop()
-        inference=revise(assignment,csp,arc[1],arc[2],arc[0])
-        if inference==None:
-            if len(inferences)!=0:
+    while len(arcs) != 0:
+        arc = arcs.pop()
+        inference = revise(assignment, csp, arc[1], arc[2], arc[0])
+        if inference == None:
+            if len(inferences) != 0:
                 for infer in inferences:
                     assignment.varDomains[infer[0]].insert([infer[1]])
             return None
-        if len(inference)!=0:
+        if len(inference) != 0:
             for infer in inference:
                 inferences.add(infer)
             for const in csp.binaryConstraints:
                 if const.affects(arc[1]):
                     if not assignment.isAssigned(const.otherVariable(arc[1])):
-                        arcs.appendleft((const,arc[1],const.otherVariable(arc[1])))
+                        arcs.appendleft((const, arc[1], const.otherVariable(arc[1])))
     return inferences
 
 
@@ -334,7 +325,6 @@ def AC3(assignment, csp):
     AC3 algorithm for constraint propagation.
     Used as a pre-processing step to reduce the problem
     before running recursive backtracking.
-
     Args:
         assignment (Assignment): the partial assignment to expand
         csp (ConstraintSatisfactionProblem): the problem description
@@ -346,24 +336,24 @@ def AC3(assignment, csp):
 
     # TODO: Question 6
     #  Hint: implement revise first and use it as a helper function"""
-    arcs=deque()
+    arcs = deque()
     for constraint in csp.binaryConstraints:
-        arcs.append((constraint,constraint.var1,constraint.var2))
-    while len(arcs)!=0:
-        arc=arcs.pop()
-        inference=revise(assignment,csp,arc[1],arc[2],arc[0])
+        arcs.append((constraint, constraint.var1, constraint.var2))
+        arcs.append((constraint, constraint.var2, constraint.var1))
+    while len(arcs) != 0:
+        arc = arcs.pop()
+        inference = revise(assignment, csp, arc[1], arc[2], arc[0])
         if inference is None:
             for infer in inferences:
                 assignment.varDomains[infer[0]].add(infer[1])
             return None
-        if len(inference)!=0:
+        if len(inference) != 0:
             for infer in inference:
                 inferences.add(infer)
             for const in csp.binaryConstraints:
-                if const.affects(arc[1]):
-                    arcs.append((const,arc[1],const.otherVariable(arc[1])))
+                if const.affects(arc[2]):
+                    arcs.append((const, arc[2], const.otherVariable(arc[2])))
     return assignment
-
 
 
 def solve(csp, orderValuesMethod=leastConstrainingValuesHeuristic,
@@ -371,7 +361,6 @@ def solve(csp, orderValuesMethod=leastConstrainingValuesHeuristic,
           inferenceMethod=forwardChecking, useAC3=True):
     """
     Solves a binary constraint satisfaction problem.
-
     Args:
         csp (ConstraintSatisfactionProblem): a CSP to be solved
         orderValuesMethod (function): a function to decide the next value to try
