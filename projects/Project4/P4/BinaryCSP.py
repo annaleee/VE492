@@ -312,8 +312,8 @@ def maintainArcConsistency(assignment, csp, var, value):
                 inferences.add(infer)
             for const in csp.binaryConstraints:
                 if const.affects(arc[1]):
-                    if not assignment.isAssigned(const.otherVariable(arc[1])):
-                        arcs.appendleft((const, arc[1], const.otherVariable(arc[1])))
+                    if not assignment.isAssigned(const.otherVariable(arc[2])):
+                        arcs.appendleft((const, arc[2], const.otherVariable(arc[2])))
     return inferences
 
 
